@@ -6,14 +6,15 @@ import { rxMethod } from '@ngrx/signals/rxjs-interop';
 import { pipe, switchMap, tap } from 'rxjs';
 import { ElementsState } from '../types/elements-state.type';
 
-const ElementsStore = signalStore(
+export const ElementsStore = signalStore(
+  { providedIn: 'root' },
   withState<ElementsState>({
     elements: [],
     error: null,
     isLoading: false,
   }),
   withMethods((store, elementsService = inject(ElementsService)) => ({
-    loadElements: rxMethod<PeriodicElement[]>(
+    loadElements: rxMethod<void>(
       pipe(
         tap(() => patchState(store, { isLoading: true, error: null })),
         switchMap(() => {
