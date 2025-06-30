@@ -7,3 +7,19 @@
   justify-content: space-between;
   padding: 2rem 2rem 0 2rem;
 }
+
+.loading-container {
+  display: grid;
+  grid-template-columns: 1fr;
+  place-items: center;
+  padding: 3rem;
+  color: white;
+}
+
+.error-container {
+  display: grid;
+  grid-template-columns: 1fr;
+  place-items: center;
+  padding: 3rem;
+  color: white;
+}
