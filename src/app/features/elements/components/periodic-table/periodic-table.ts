@@ -13,15 +13,24 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatInputModule } from '@angular/material/input';
+import { MatCardModule } from '@angular/material/card';
+import { PeriodicElement } from '../../types/periodic-element.type';
+import { ReactiveFormsModule } from '@angular/forms';
+import { FormControl } from '@angular/forms';
+import { debounceTime, tap } from 'rxjs';
+import { AsyncPipe } from '@angular/common';
 
 @Component({
   selector: 'app-periodic-table',
   imports: [
+    AsyncPipe,
     MatButtonModule,
+    MatCardModule,
     MatIconModule,
     MatInputModule,
     MatTableModule,
     MatProgressSpinnerModule,
+    ReactiveFormsModule,
   ],
   templateUrl: './periodic-table.html',
   styleUrl: './periodic-table.scss',
@@ -29,9 +38,8 @@ import { MatInputModule } from '@angular/material/input';
 })
 export class PeriodicTable implements OnInit {
   private readonly elementsStore = inject(ElementsStore);
-  private filterInput =
-    viewChild.required<ElementRef<HTMLInputElement>>('filterInput');
-  displayedColumns: string[] = [
+  protected filterForm = new FormControl<string>('');
+  protected displayedColumns: string[] = [
     'position',
     'name',
     'weight',
@@ -42,6 +50,13 @@ export class PeriodicTable implements OnInit {
   protected readonly elements = this.elementsStore.elements;
   protected readonly isLoading = this.elementsStore.isLoading;
   protected readonly error = this.elementsStore.error;
+
+  protected $formSubscribe = this.filterForm.valueChanges.pipe(
+    debounceTime(2000),
+    tap((val: string | null) => {
+      this.dataSource().filter = val?.trim().toLowerCase() ?? '';
+    })
+  );
 
   protected dataSource = computed(
     () => new MatTableDataSource(this.elements())
@@ -55,13 +70,11 @@ export class PeriodicTable implements OnInit {
     this.elementsStore.loadElements();
   }
 
-  applyFilter(): void {
-    const filterValue = this.filterInput().nativeElement.value;
-    this.dataSource().filter = filterValue.trim().toLowerCase();
+  deleteElement(element: PeriodicElement): void {
+    this.elementsStore.removeElement(element.position);
   }
 
   clearFilter(): void {
-    this.filterInput().nativeElement.value = '';
-    this.dataSource().filter = '';
+    this.filterForm.reset();
   }
 }
