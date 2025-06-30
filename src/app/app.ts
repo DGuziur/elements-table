@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { PeriodicTable } from './features/elements/components/periodic-table/periodic-table';
 
@@ -7,6 +7,7 @@ import { PeriodicTable } from './features/elements/components/periodic-table/per
   imports: [PeriodicTable],
   templateUrl: './app.html',
   styleUrl: './app.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class App {
   protected title = 'elements';

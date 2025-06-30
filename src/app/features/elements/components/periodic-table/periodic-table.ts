@@ -2,10 +2,8 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
-  ElementRef,
   inject,
   OnInit,
-  viewChild,
 } from '@angular/core';
 import { ElementsStore } from '../../store/elements.store';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
@@ -19,6 +17,9 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { FormControl } from '@angular/forms';
 import { debounceTime, tap } from 'rxjs';
 import { AsyncPipe } from '@angular/common';
+import { MatDialog } from '@angular/material/dialog';
+import { ElementForm } from '../element-form/element-form';
+import { DEFAULT_COLUMNS } from '../../config/displayed-columns.config';
 
 @Component({
   selector: 'app-periodic-table',
@@ -38,14 +39,9 @@ import { AsyncPipe } from '@angular/common';
 })
 export class PeriodicTable implements OnInit {
   private readonly elementsStore = inject(ElementsStore);
+  private dialog = inject(MatDialog);
   protected filterForm = new FormControl<string>('');
-  protected displayedColumns: string[] = [
-    'position',
-    'name',
-    'weight',
-    'symbol',
-    'actions',
-  ];
+  protected displayedColumns: string[] = DEFAULT_COLUMNS;
 
   protected readonly elements = this.elementsStore.elements;
   protected readonly isLoading = this.elementsStore.isLoading;
@@ -76,5 +72,36 @@ export class PeriodicTable implements OnInit {
 
   clearFilter(): void {
     this.filterForm.reset();
+  }
+
+  addElement(): void {
+    const dialogRef = this.dialog.open(ElementForm, {
+      data: {
+        title: 'Add new element',
+      },
+    });
+
+    dialogRef.afterClosed().subscribe((element: PeriodicElement | null) => {
+      if (element) {
+        this.elementsStore.addElement(element);
+      }
+    });
+  }
+
+  editElement(element: PeriodicElement): void {
+    const dialogRef = this.dialog.open(ElementForm, {
+      data: {
+        title: 'Edit element',
+        element: element,
+      },
+    });
+
+    dialogRef
+      .afterClosed()
+      .subscribe((updatedElement: PeriodicElement | null) => {
+        if (updatedElement) {
+          this.elementsStore.updateElement(updatedElement);
+        }
+      });
   }
 }
